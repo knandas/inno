@@ -31,7 +31,8 @@ void loop()
 
 void setup() 
 {
-  pinMode(LED_BUILTIN, OUTPUT);
+  pinMode(led3, OUTPUT);
+  pinMode(led4, OUTPUT);
 }
 
 void loop() 
