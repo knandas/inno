@@ -736,7 +736,7 @@ esp32 wifi webserver2
 #define led_pin2 12
 bool out1=0;
 bool out2=0;
-const char* ssid = "ELEC302_plus";
+const char* ssid = "ELEC302";
 const char* password = "elec1234";
 
 WebServer server;
