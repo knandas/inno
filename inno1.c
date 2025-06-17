@@ -108,7 +108,7 @@ void loop()
 ////////////////////////////////////////////////////////////////////////////
 //////////////////////////////// code 1 digital input basic /////////////////
 
-const int buttonPin = 2;     
+const int buttonPin = 32;     
 const int ledPin =  13;      
 
 int buttonState = 0;        
