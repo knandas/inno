@@ -82,7 +82,7 @@ void loop()
    float volt= sensorValue *(3.3/4096.0);
    RemoteXY.level_01=percent;
    //snprintf (RemoteXY.text_01, 5, "%f.2", volt);
-   dtostrf(volt, 1, 2, RemoteXY.text_01);
+    RemoteXY.value_01=volt;
    lastTime=millis();
   } 
 }
