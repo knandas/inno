@@ -457,10 +457,8 @@ void setup()
 {
   analogReadResolution(12);
   pinMode(Ain1, INPUT);
-  Serial.begin(9600);
-  Serial.println("CLEARDATA"); //clears up any data left from previous projects
-  Serial.println("LABEL,TIME,sensor,percent,volt,tempC"); 
-  Serial.println("RESETTIMER"); //resets timer to 0
+  Serial.begin(115200);
+  
 }
 
 void loop()
@@ -472,16 +470,13 @@ void loop()
   Tavg1=(((Tavg1*9)+analogValue)/10); //moving avg
   float celsius = 1 / (log(1 / (4095. / Tavg1 - 1)) / BETA + 1.0 / 298.15) - 273.15;
 
-  Serial.print("DATA,TIME,"); //TIMER,");
   Serial.print(sensorValue);
   Serial.print(",");
   Serial.print(percent);
   Serial.print(",");
   Serial.print(voltage);
   Serial.print(",");
-  Serial.print(celsius);
-  Serial.print(",");
-  Serial.println("AUTOSCROLL_20");
+  Serial.println(celsius);
   delay(1000);
 }
 
