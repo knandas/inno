@@ -223,6 +223,94 @@ void setup()
 void loop() {
 
 }
+/////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////line artron with LDR /////////////////////////////////////////
+
+#include <WiFi.h> // นำเข้าไลบรารี่ WiFi
+#include <ArtronShop_LineMessaging.h> // นำเข้าไลบารี่ ArtronShop_LineMessaging
+
+const char* ssid = "ELEC302"; // ชื่อ WiFi
+const char* password = "elec1234"; // รหัสผ่าน WiFi
+#define LINE_TOKEN "lvoiWlK5pc9p4t89/1O/w1cDnyilFU=" // Channel access token
+
+const int LdrPin = 39;  
+int sensorValue = 0;
+bool detect=0,lastDetect=0;
+float avg1=analogRead(LdrPin);
+unsigned long delayTime1=0, delayTime2=0;
+
+
+void setup() 
+{
+  Serial.begin(115200); // เริ่มต้นใช้ Serial ที่ความเร็ว 115200
+  while (!Serial) { delay(100); }
+
+  // We start by connecting to a WiFi network
+
+  Serial.println();
+  Serial.println("******************************************************");
+  Serial.print("Connecting to ");
+  Serial.println(ssid);
+
+  WiFi.begin(ssid, password); // เริ่มต้นเชื่อมต่อ WiFi
+
+  while (WiFi.status() != WL_CONNECTED) { // วนลูปหากยังเชื่อมต่อ WiFi ไม่สำเร็จ
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println("");
+  Serial.println("WiFi connected");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
+
+  LINE.begin(LINE_TOKEN); // เริ่มต้นใช้ LINE Notify
+
+}
+
+void loop() 
+{
+  if ((millis() - delayTime1) > 100)
+  {
+    lastDetect=detect;
+    sensorValue = analogRead(LdrPin);
+    avg1=(((avg1*29)+sensorValue)/30); //moving avg 30
+
+    //motion detect
+    if(sensorValue>avg1+400) detect=1;
+    if(lastDetect==0&&detect==1)
+    {
+      Serial.print(avg1);
+      Serial.print(" ");
+      Serial.print(sensorValue);
+      Serial.println(detect?"\tSomebody is in this area!":" ");
+      if (LINE.send("C336bbcd7f", "someone here"))   //user ID or Group ID
+      {  // ถ้าส่งข้อความ "รถโดนขโมย" ไปที่ LINE สำเร็จ
+       Serial.println("Send notify successful"); // ส่งข้อความ "Send notify successful" ไปที่ Serial Monitor
+      } else 
+      { // ถ้าส่งไม่สำเร็จ
+        Serial.printf("Send notify fail. check your token (code: %d)\n", LINE.status_code); // ส่งข้อความ "Send notify fail" ไปที่ Serial Monitor
+      }
+    }
+    delayTime1=millis();
+  }
+
+    if ((millis() - delayTime2) > 30000)
+  {
+    detect=0;
+    delayTime2=millis();
+    //Serial.println("clear");
+  }
+
+
+
+
+}
+
+
+
+
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 https://developers.line.biz/en/docs/messaging-api/sticker-list/#sticker-definitions     link sticker
