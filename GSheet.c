@@ -93,14 +93,14 @@ void loop()
   voltage=sensorValue*3.3/4096;
   Serial.print("min:");
   Serial.println(0);
-  Serial.print("max:");
+  Serial.print(",max:");
   Serial.println(3.5);
   
   //Serial.print("sensor: ");
   //Serial.print(sensorValue);
   //Serial.print("  percent: ");
   //Serial.print(percent);
-  Serial.print("voltage:");
+  Serial.print(",voltage:");
   Serial.println(voltage);
   delay(100);
 }
