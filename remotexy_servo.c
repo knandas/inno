@@ -1,4 +1,4 @@
-/////////////////////12-bits analog input /////////////////////////////////
+///////////////////// code 1 12-bits analog input /////////////////////////////////
 /*
   ReadAnalogVoltage
   https://www.arduino.cc/en/Tutorial/BuiltInExamples/ReadAnalogVoltage
@@ -30,7 +30,7 @@ void loop()
 
 
 /////////////////////////////////////////////////////////////
-///////12-bits analog input serial plotter  ///////////////
+///////  code 2 12-bits analog input serial plotter  ///////////////
 
 
 void setup() 
@@ -61,159 +61,123 @@ void loop()
   delay(100);
 }
 
+////////////////////////////////////////////////////////////////
+///////////////////// code3 test servo ledc ///////////////////////////////////////////
+
+
+unsigned long delayTime1=0,delayTime2=0 ; 
+#define servo1 25
+#define freq  50
+#define resolution  16
+
+ #define COUNT_LOW 2676
+ #define COUNT_HIGH 7553
+
+void setup() 
+{
+  Serial.begin(115200);
+  ledcSetup(1, 50, 16);
+  ledcAttachPin(servo1, 1);
+}
+
+void loop() 
+{
+  for(int vol=COUNT_LOW;vol<COUNT_HIGH;vol=vol+10)
+  {
+   ledcWrite(1, vol);
+   Serial.println(vol);
+   delay(10);
+  }
+
+  for(int vol=COUNT_HIGH;vol>COUNT_LOW;vol=vol-10)
+  {
+   ledcWrite(1, vol);
+   Serial.println(vol);
+   delay(10);
+  }
+}
+
+//////////////////////////////////////////////////////////
+/////////////// code 4 servo by vr///////////////////////////////////
+
+#define servo1Pin 25
+#define servo1Ch 1
+#define freq  50
+#define resolution  16
+#define Ain 36
+#define COUNT_LOW 2676
+#define COUNT_HIGH 7553
+int VR,pos,count;
+
+void setup() 
+{
+  Serial.begin(115200);
+  Serial.println("Start");
+  ledcSetup(servo1Ch, freq, resolution); //ch,freq,res
+  ledcAttachPin(servo1Pin, servo1Ch);
+}
+
+void loop() 
+{
+   VR=analogRead(Ain);
+   pos=map(VR,0,4095,0,180);
+   count=map(VR,0,4095,COUNT_LOW,COUNT_HIGH);
+   ledcWrite(servo1Ch,count );
+   Serial.printf("position=%d count=%d\n",pos,count);
+   delay(50);
+}
+
+
 //////////////////////////////////////////////////////////////////
 /////////////// code for remoteXY ///////////////////////////
 
+/////////////////////////////////////////////
+//           END RemoteXY include          //
+/////////////////////////////////////////////
+
+
 #define analogInPin 36
+#define led1 4
+#define servo1Pin 25
+#define servo1Ch 1
+#define freq  50
+#define resolution  16
+#define Ain 36
+#define COUNT_LOW 2676
+#define COUNT_HIGH 7553
+int VR,pos,count;
 unsigned long lastTime=0; 
+
+void setup() 
+{
+  RemoteXY_Init ();  // initialization by macros 
+  pinMode(led1,OUTPUT);
+  ledcSetup(servo1Ch, freq, resolution); //ch,freq,res
+  ledcAttachPin(servo1Pin, servo1Ch);
+  //Serial.begin(115200);
+}
+
+
 void loop() 
 { 
   RemoteXY_Handler ();
-  
-  digitalWrite(PIN_BUTTON_01, (RemoteXY.button_01==0)?LOW:HIGH);
-  digitalWrite(PIN_PUSHSWITCH_01, (RemoteXY.pushSwitch_01==0)?LOW:HIGH);
-  digitalWrite(PIN_SWITCH_01, (RemoteXY.switch_01==0)?LOW:HIGH);
-  
+   
+  digitalWrite(led1, (RemoteXY.switch_01==0)?LOW:HIGH);
+  count=map(RemoteXY.slider_01,0,100,COUNT_LOW,COUNT_HIGH);
+  ledcWrite(servo1Ch,count );
 
-  if(millis()>lastTime+1000)
+  if(millis()>lastTime+500)
   {
    float sensorValue = analogRead(analogInPin);
    int percent= sensorValue *(100/4096.0);
    float volt= sensorValue *(3.3/4096.0);
-   RemoteXY.linearbar_01=percent;
-   //snprintf (RemoteXY.text_01, 5, "%f.2", volt);
-    RemoteXY.value_01=volt;
+   RemoteXY.circularBar_01=percent;
+   RemoteXY.value_01=volt;
    lastTime=millis();
   } 
-}
-
-
-///////////////////////////////////////////////////////////////
-////////////////////////////// myBounce.h ////////
-
-/*
- * myBounce.h
- */
-
-#ifndef MYBOUNCE_H
-#define MYBOUNCE_H
-#include <Arduino.h>
-
-    
-class myBounce
-{
-  public:
-   myBounce(byte pin);
-   bool update();
-  private:
-   byte _pin;
-   bool _sw_state;
-   bool _last_sw_state;
-   bool _change;
-   unsigned long _time; 
-};
-
-#endif
-
-
-//////////////////////////////////////////////////////////////
-////////////////////myBounce.cpp //////////////////////////////
-
-/*
- * myBounce.cpp
- */
-
-#include "myBounce.h"
-
-myBounce::myBounce(byte pin)
-{
-   pinMode(pin, INPUT_PULLUP);
-  _pin = pin;
-}
-
-bool myBounce::update()
-{
-  bool ret=0;
-  _sw_state=digitalRead(_pin);
-  if((_sw_state==0)&&(_last_sw_state==1))
-  {
-    _time=millis();
-    _change=1;
-  }
-  _last_sw_state=_sw_state;
-
-  if(((millis()-_time)>50)&&(_change==1))
-  {
-    _sw_state=digitalRead(_pin);
-    if(_sw_state==0)
-    {
-      ret=1;
-    }else
-    {
-      ret=0;
-    }
-    _change=0;
-  }
- return ret;
-}
-
-/////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////
-//           END RemoteXY include          //
-/////////////////////////////////////////////
-
-#include "myBounce.h"
-#define pinSw1 34  //external R-pullUP
-#define LED1 4
-#define analogInPin 36
-unsigned long lastTime=0, lastTimeXY=0;
-myBounce SW1(pinSw1);
-uint8_t state1=0,state2=0;
-
-void setup() 
-{
-  RemoteXY_Init (); 
-  pinMode (pinSw1, INPUT);
-  pinMode (LED1, OUTPUT);
-  RemoteXY.led_01=state1;  
-}
-
-void loop() 
-{ 
-  RemoteXY_Handler ();
   
-  if(SW1.update()==1)
-  { 
-    state1=!state1; 
-    digitalWrite(LED1,state1); 
-    //RemoteXY.led_01=state1;
-  }
-
-  if((RemoteXY.button_01==1)&&(state2==0))
-  {
-    state1=!state1; 
-    digitalWrite(LED1,state1); 
-    RemoteXY.led_01=state1;
-    lastTimeXY=millis();
-    state2=1;
-  }
- 
-  if(millis()>lastTimeXY+2000){ state2=0;}  
-
-  if(millis()>lastTime+1000)
-  {
-    float sensorValue = analogRead(analogInPin);
-    int percent= sensorValue *(100/4096.0);
-    float volt= sensorValue *(3.3/4096.0);
-    RemoteXY.onlineGraph_01_var1=volt;
-    RemoteXY.value_01=volt;
-    RemoteXY.led_01=state1;
-    lastTime=millis();
-  }
-
-  RemoteXY_delay(100); 
 }
+  
+  
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
